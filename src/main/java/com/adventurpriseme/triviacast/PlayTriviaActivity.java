@@ -1,17 +1,24 @@
 package com.adventurpriseme.triviacast;
 
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
 
+import com.google.android.gms.cast.Cast;
+import com.google.android.gms.cast.CastDevice;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 
-public class PlayTriviaActivity extends Activity {
 
+public class PlayTriviaActivity extends ActionBarActivity implements
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener,
+        Cast.MessageReceivedCallback {
     // Data members
-    boolean m_bWillHost = true;
+    static boolean m_bWillHost = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,5 +70,25 @@ public class PlayTriviaActivity extends Activity {
                 // Should never get here
                 break;
         }
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onMessageReceived(CastDevice castDevice, String s, String s2) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
     }
 }
