@@ -16,6 +16,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.adventurpriseme.triviacast.PlayTriviaActivity"
+            android:label="@string/title_activity_play_trivia"
+            android:parentActivityName="com.adventurpriseme.triviacast.MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.adventurpriseme.triviacast.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

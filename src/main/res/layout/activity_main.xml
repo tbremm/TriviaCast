@@ -12,7 +12,8 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:src="@drawable/ic_launcher"
-        android:contentDescription="@string/cd_playgame" />
+        android:contentDescription="@string/cd_playgame"
+        android:onClick="onPlayGame" />
 
     <TextView android:text="@+string/triviacast"
         android:layout_width="wrap_content"
