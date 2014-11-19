@@ -10,5 +10,6 @@
     <string name="title_activity_play_trivia">PlayTriviaActivity</string>
     <string name="welcomeToTC">Welcome to TriviaCast!</string>
     <string name="willingToHost">I\'m willing to host</string>
+    <string name="media_route_menu_title">Media route menu title</string>
 
 </resources>
