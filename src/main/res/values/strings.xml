@@ -11,5 +11,9 @@
     <string name="welcomeToTC">Welcome to TriviaCast!</string>
     <string name="willingToHost">I\'m willing to host</string>
     <string name="media_route_menu_title">Media route menu title</string>
+    <string name="AlertTitle_playerInit">Who are you?</string>
+    <string name="AlertMsg_playerNameHint">Enter your name here</string>
+    <string name="alert_enterNameHint">Enter your name here...</string>
+    <string name="alert_whoAreYou">Who are you?</string>
 
 </resources>

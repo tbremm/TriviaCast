@@ -1,6 +1,7 @@
 package com.adventurpriseme.triviacast;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
@@ -27,40 +28,58 @@ import com.google.android.gms.common.api.Status;
 
 import java.io.IOException;
 
-
+/**
+ * This is the trivia game entry point.
+ * <p>
+ * This activity is the initial page displayed to the user upon selecting to play trivia.
+ * <p>
+ * This is where the user will connect to the chromecast.
+ */
 public class PlayTriviaActivity extends ActionBarActivity implements
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         Cast.MessageReceivedCallback {
 
-    // Data members
-    static boolean m_bWillHost = true;
-    MediaRouter mMediaRouter;
-    MediaRouteSelector mMediaRouteSelector;
-    static MediaRouter.Callback mMediaRouterCallback;
-    private static final String TAG = "Trivia Activity";
-    private GoogleApiClient mApiClient;
+    /** Data members */
+    static CTriviaPlayer m_cTriviaPlayer = new CTriviaPlayer();
+    final Context context = this;
 
+    MediaRouter m_MediaRouter;
+    MediaRouteSelector m_MediaRouteSelector;
+    static MediaRouter.Callback m_MediaRouterCallback;
+    private static final String TAG = "Trivia Activity";
+    private GoogleApiClient m_ApiClient;
+
+    /**
+     * Play Trivia Activity creator.
+     * <p>
+     * This is the entry point for the activity. It is responsible for the Chromecast media router
+     * and its menu button. This will also initialize the player.
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Spawn the activity layout
         setContentView(R.layout.activity_play_trivia);
 
         // Show the Up button in the action bar.
         setupActionBar();
 
         // Create the media router, selector, and callback for the chromecast
-        mMediaRouter = MediaRouter.getInstance(getApplicationContext());
-        mMediaRouteSelector = new MediaRouteSelector.Builder().addControlCategory(CastMediaControlIntent.categoryForCast("53EAA363")).build();
-        mMediaRouterCallback = new MyMediaRouterCallback();
+        m_MediaRouter = MediaRouter.getInstance(getApplicationContext());
+        m_MediaRouteSelector = new MediaRouteSelector.Builder().addControlCategory(CastMediaControlIntent.categoryForCast("53EAA363")).build();
+        m_MediaRouterCallback = new MyMediaRouterCallback();
 
-        _InitPlayer();
-    }
+        // Initialize the player
+        m_cTriviaPlayer.Initialize(context);
 
-    // Initialize player settings
-    private void _InitPlayer() {
-        // Set the checkbox state
-        ((CheckBox) findViewById(R.id.checkbox_willHost)).setChecked(m_bWillHost);
+        // Initialize the willingness to host checkbox
+        ((CheckBox) findViewById(R.id.checkbox_willHost)).setChecked(m_cTriviaPlayer.getWillHost());
+
+        // Create a welcome message for the user
+        ((TextView) findViewById(R.id.textview1)).setText("Welcome, " + m_cTriviaPlayer.getName() + "!");
     }
 
     /**
@@ -82,7 +101,7 @@ public class PlayTriviaActivity extends ActionBarActivity implements
         MenuItem mediaRouteMenuItem = menu.findItem(R.id.media_route_menu_item);
         MediaRouteActionProvider mediaRouteActionProvider =
                 (MediaRouteActionProvider) MenuItemCompat.getActionProvider(mediaRouteMenuItem);
-        mediaRouteActionProvider.setRouteSelector(mMediaRouteSelector);
+        mediaRouteActionProvider.setRouteSelector(m_MediaRouteSelector);
         return true;
     }
 
@@ -118,7 +137,7 @@ public class PlayTriviaActivity extends ActionBarActivity implements
         // Operate on the specific checkbox
         switch (view.getId()) {
             case R.id.checkbox_willHost:    // Is player willing to host?
-                m_bWillHost = bChecked;
+                m_cTriviaPlayer.setWillHost(bChecked);
                 break;
             default:
                 // Should never get here
@@ -136,7 +155,7 @@ public class PlayTriviaActivity extends ActionBarActivity implements
             //reconnectChannels();
         } else {
             try {
-                Cast.CastApi.launchApplication(mApiClient, "53EAA363", false).setResultCallback(
+                Cast.CastApi.launchApplication(m_ApiClient, "53EAA363", false).setResultCallback(
                         new ResultCallback<Cast.ApplicationConnectionResult>() {
                             @Override
                             public void onResult(Cast.ApplicationConnectionResult result) {
@@ -151,7 +170,7 @@ public class PlayTriviaActivity extends ActionBarActivity implements
                                     TextView tmp = (TextView) findViewById(R.id.textRoundResult);
                                     mTriviaChannel = new TriviaChannel(tmp);
                                     try {
-                                        Cast.CastApi.setMessageReceivedCallbacks(mApiClient,
+                                        Cast.CastApi.setMessageReceivedCallbacks(m_ApiClient,
                                                 mTriviaChannel.getNamespace(),
                                                 mTriviaChannel);
 
@@ -188,9 +207,9 @@ public class PlayTriviaActivity extends ActionBarActivity implements
     }
 
     private void sendMessage (String message) {
-        if (mApiClient != null && mTriviaChannel != null) {
+        if (m_ApiClient != null && mTriviaChannel != null) {
             try {
-                Cast.CastApi.sendMessage(mApiClient, mTriviaChannel.getNamespace(), message)
+                Cast.CastApi.sendMessage(m_ApiClient, mTriviaChannel.getNamespace(), message)
                         .setResultCallback(
                                 new ResultCallback<Status>() {
                                     @Override
@@ -204,35 +223,35 @@ public class PlayTriviaActivity extends ActionBarActivity implements
                 Log.e(TAG, "Exception while sending message", e);
             }
 
-        } else if (mApiClient == null) {
-            Log.e (TAG, "mApiClient is null!");
-        } else { // mRPSChannel == null
-            Log.e(TAG, "mRPSChannel is null!");
+        } else if (m_ApiClient == null) {
+            Log.e (TAG, "m_ApiClient is null!");
+        } else {
+            Log.e(TAG, "mTriviaChannel is null!");
         }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mMediaRouter.addCallback(mMediaRouteSelector, mMediaRouterCallback,
+        m_MediaRouter.addCallback(m_MediaRouteSelector, m_MediaRouterCallback,
                 MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY);
     }
     @Override
     protected void onPause() {
         if (isFinishing()) {
-            mMediaRouter.removeCallback(mMediaRouterCallback);
+            m_MediaRouter.removeCallback(m_MediaRouterCallback);
         }
         super.onPause();
     }
     @Override
     protected void onStart() {
         super.onStart();
-        mMediaRouter.addCallback(mMediaRouteSelector, mMediaRouterCallback,
+        m_MediaRouter.addCallback(m_MediaRouteSelector, m_MediaRouterCallback,
                 MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY);
     }
     @Override
     protected void onStop() {
-        mMediaRouter.removeCallback(mMediaRouterCallback);
+        m_MediaRouter.removeCallback(m_MediaRouterCallback);
         super.onStop();
     }
 
@@ -249,16 +268,16 @@ public class PlayTriviaActivity extends ActionBarActivity implements
             mCastClientListener = new Cast.Listener() {
                 @Override
                 public void onApplicationStatusChanged() {
-                    if (mApiClient != null) {
+                    if (m_ApiClient != null) {
                         Log.d(TAG, "onApplicationStatusChanged: "
-                                + Cast.CastApi.getApplicationStatus(mApiClient));
+                                + Cast.CastApi.getApplicationStatus(m_ApiClient));
                     }
                 }
 
                 @Override
                 public void onVolumeChanged() {
-                    if (mApiClient != null) {
-                        Log.d(TAG, "onVolumeChanged: " + Cast.CastApi.getVolume(mApiClient));
+                    if (m_ApiClient != null) {
+                        Log.d(TAG, "onVolumeChanged: " + Cast.CastApi.getVolume(m_ApiClient));
                     }
                 }
 
@@ -272,13 +291,13 @@ public class PlayTriviaActivity extends ActionBarActivity implements
             Cast.CastOptions.Builder apiOptionsBuilder = Cast.CastOptions
                     .builder(mSelectedDevice, mCastClientListener);
 
-            mApiClient = new GoogleApiClient.Builder(PlayTriviaActivity.this)
+            m_ApiClient = new GoogleApiClient.Builder(PlayTriviaActivity.this)
                     .addApi(Cast.API, apiOptionsBuilder.build())
                     .addConnectionCallbacks(PlayTriviaActivity.this)
                     .addOnConnectionFailedListener(PlayTriviaActivity.this)
                     .build();
 
-            mApiClient.connect();
+            m_ApiClient.connect();
         }
     }
 }
