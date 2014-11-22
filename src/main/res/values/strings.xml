@@ -15,5 +15,8 @@
     <string name="AlertMsg_playerNameHint">Enter your name here</string>
     <string name="alert_enterNameHint">Enter your name here...</string>
     <string name="alert_whoAreYou">Who are you?</string>
+    <string name="enter_name">Please enter your name...</string>
+    <string name="okay_button">Okay!</string>
+    <string name="cancel">Cancel</string>
 
 </resources>
