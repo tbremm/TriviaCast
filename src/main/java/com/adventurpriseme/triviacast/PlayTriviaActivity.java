@@ -15,6 +15,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.cast.ApplicationMetadata;
@@ -63,7 +65,15 @@ public class PlayTriviaActivity extends ActionBarActivity implements GoogleApiCl
 		{
 		super.onCreate (savedInstanceState);
 		// Spawn the activity layout
-		setContentView (R.layout.activity_play_trivia);
+		setContentView (R.layout.activity_play_trivia_offline);
+
+		// Get the main layout to set its properties
+		RelativeLayout relativeLayout = (RelativeLayout) findViewById (R.id.rl_trivia_main_offline);
+		relativeLayout.setBackgroundResource (R.drawable.blue_orange_background);
+
+		// Get the image view used for delivering question content and display its decorations
+		ImageView imgvThoughtBubble = (ImageView) findViewById (R.id.img_thought_bubble);
+		imgvThoughtBubble.setBackgroundResource (R.drawable.pd_thought_bubble_outline_half_long);
 
 		// Show the Up button in the action bar.
 		setupActionBar ();
@@ -189,7 +199,7 @@ public class PlayTriviaActivity extends ActionBarActivity implements GoogleApiCl
 						boolean wasLaunched = result.getWasLaunched ();
 						mApplicationStarted = true;
 
-						TextView tmp = (TextView) findViewById (R.id.textRoundResult);
+						TextView tmp = (TextView) findViewById (R.id.tvQuestion);
 						mTriviaChannel = new TriviaChannel (tmp);
 						try
 							{
@@ -290,6 +300,14 @@ public class PlayTriviaActivity extends ActionBarActivity implements GoogleApiCl
 		super.onStart ();
 		m_MediaRouter.addCallback (m_MediaRouteSelector, m_MediaRouterCallback, MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY);
 
+/*	FIXME - We need to figure out how to scale/load bitmaps into memory efficiently to avoid visual lag and overrunning our memory resources.
+
+		Bitmap bmBackground = CBitmapLoader.decodeSampledBitmapFromResource (getResources (), R.drawable.pd_thought_bubble_outline_half_long,
+		findViewById (R.id.rl_trivia_main_offline).getWidth (),
+		                                                                     findViewById (R.id.rl_trivia_main_offline).getHeight ());
+
+		imgvThoughtBubble.setImageBitmap (bmBackground);
+*/
 		//	TODO: Deal with the player's name. I'm not sure how to wait for the dialog to complete correctly.
 		//		if (m_cTriviaPlayer.getName ().isEmpty () /** or if player chooses to change name*/)
 		//			{
@@ -317,7 +335,7 @@ public class PlayTriviaActivity extends ActionBarActivity implements GoogleApiCl
 		//		if (!m_cTriviaPlayer.getName ().isEmpty ())
 		//			{
 		//			// Create a welcome message for the user
-		//			((TextView) findViewById (R.id.textview1)).setText ("Hi, " + m_cTriviaPlayer.getName () + ", welcome to Trivia!");
+		//			((TextView) findViewById (R.id.tvPlayTitle)).setText ("Hi, " + m_cTriviaPlayer.getName () + ", welcome to Trivia!");
 		//			}
 		}
 
